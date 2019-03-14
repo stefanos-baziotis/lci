@@ -42,7 +42,7 @@ void *scalloc(size_t num_elems, size_t elem_size) {
 // places that const might catch bugs.
 typedef struct interned_str {
 	size_t len;
-	char *str;
+	const char *str;
 } interned_str_t;
 
 
@@ -76,7 +76,7 @@ static void push_str(size_t len, char *str) {
 
 // NOTE(stefanos): That eventually should a hash-table because that has
 // O(n) but it's easy and effective enough for template version.
-static char *str_intern_range(char *start, char *end) {
+static const char *str_intern_range(const char *start, const char *end) {
 	size_t len = end - start;
 	for (size_t i = 0; i != interns_len; ++i) {
 		// NOTE(stefanos): You may assume that because we test interns[i].len == len,
@@ -94,7 +94,7 @@ static char *str_intern_range(char *start, char *end) {
 }
 
 // NOTE(stefanos): That could be done faster, but that's easier.
-char *str_intern(char *str) {
+const char *str_intern(const char *str) {
 	return str_intern_range(str, str + strlen(str));
 }
 
@@ -106,7 +106,7 @@ void str_intern_initialize(void) {
 
 void str_intern_free(void) {
 	for (size_t i = 0; i != interns_len; ++i) {
-		free(interns[i].str);
+		free((void *) interns[i].str);
 	}
 	free(interns);
 }

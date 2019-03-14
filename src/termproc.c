@@ -288,7 +288,7 @@ int termSubst(TERM *x, TERM *M, TERM *N, int mustClone) {
 #ifndef NDEBUG
 int freeNo;				// count the number of calls of termIsFree
 #endif
-int termIsFreeVar(TERM *t, char *name) {
+int termIsFreeVar(TERM *t, const char *name) {
 	// closed terms have no free variables
 	if(t->closed)
 		 return 0;
@@ -586,7 +586,7 @@ int termAliasSubst(TERM *t) {
 // all substitutions were successful, or 1 if some alias was undefined.
 // If id != NULL the only this specific alias is substituted.
 
-int termRemoveAliases(TERM *t, char *id) {
+int termRemoveAliases(TERM *t, const char *id) {
 
 	switch(t->type) {
 	 case(TM_VAR):
@@ -615,7 +615,7 @@ int termRemoveAliases(TERM *t, char *id) {
 // Replaces all occurrences of an aliast with a variable. Used when removing recursion
 // via a fixed point combinator.
 
-void termAlias2Var(TERM *t, char *alias, char *var) {
+void termAlias2Var(TERM *t, const char *alias, const char *var) {
 
 	switch(t->type) {
 	 case(TM_VAR):
@@ -703,7 +703,7 @@ list_t* termFreeVars(TERM *t) {
 	switch(t->type) {
 	 case(TM_VAR):
 		vars = list_create(LISTCOUNT_T_MAX);
-		list_append(vars, lnode_create(t->name));
+		list_append(vars, lnode_create((void *) t->name));
 		break;
 
 	 case(TM_ALIAS):
@@ -732,7 +732,7 @@ list_t* termFreeVars(TERM *t) {
 // the following order:
 //		a, b, ..., z, aa, ab, .., ba, bb, ..., zz, aaa, aab, ...
 
-char *getVariable(TERM *t1, TERM *t2) {
+const char *getVariable(TERM *t1, TERM *t2) {
 	char s[10] = {'a', '\0'};
 	int curLen = 1, i;
 

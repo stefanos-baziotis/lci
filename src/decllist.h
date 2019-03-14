@@ -29,7 +29,7 @@ typedef struct tag_idlist {
 } IDLIST;
 
 typedef struct tag_decl {
-	char *id;
+	const char *id;
 	TERM *term;
 	struct tag_decl *next;
 	IDLIST aliases;
@@ -40,7 +40,7 @@ typedef struct tag_decl {
 } DECL;
 
 typedef struct tag_oper{ 
-	char *id;
+	const char *id;
 	int preced;
 	ASS_TYPE assoc;
 	struct tag_oper *next;
@@ -53,12 +53,12 @@ typedef struct {
 } CYCLE;
 
 
-void termAddDecl(char *id, TERM *term);
-DECL *getDecl(char *id);
-TERM *termFromDecl(char *id);
+void termAddDecl(const char *id, TERM *term);
+DECL *getDecl(const char *id);
+TERM *termFromDecl(const char *id);
 
 void buildAliasList(DECL *d);
-int searchAliasList(IDLIST *list, char *id);
+int searchAliasList(IDLIST *list, const char *id);
 void findAliases(TERM *t, IDLIST *list);
 
 int findCycle();
@@ -67,10 +67,10 @@ int getCycleSize(DECL *start, DECL *end);
 void removeCycle(CYCLE c);
 
 TERM *getIndexTerm(int varno, int n, char *tuple);
-void printDeclList(char *id);
+void printDeclList(const char *id);
 
-OPER *getOper(char *id);
-void addOper(char *id, int preced, ASS_TYPE assoc);
+OPER *getOper(const char *id);
+void addOper(const char *id, int preced, ASS_TYPE assoc);
 
 
 #endif

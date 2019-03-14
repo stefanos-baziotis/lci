@@ -44,6 +44,7 @@ int main() {
 
 	mem_arena_initialize(MB(1));
 	str_intern_initialize();
+	execSystemCmdInitialize();
 
 #ifdef USE_READLINE
 	char *buffer = NULL;

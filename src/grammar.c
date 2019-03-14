@@ -36,7 +36,7 @@
 // Characters inside each string belong to the same class
 // The finite automaton fsm defines transitions for each character class
 
-char *validChars[VALIDCHNO] =	{
+const char *validChars[VALIDCHNO] =	{
 	"abcdefghijklmnopqrstuvwxyz_",
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	"01234567890",
@@ -117,7 +117,7 @@ int LL1[NONTRMNO][TRMNO] = {
 
 
 #define OPERNO 5
-TOKEN_TYPE selectOper(char *name) {
+TOKEN_TYPE selectOper(const char *name) {
 	struct {
 		char *name;
 		TOKEN_TYPE token;
@@ -220,8 +220,8 @@ void procRule0(SYMB_INFO *symb) {
 
 	//$$ = c;
 
-	termRemoveOper($(2));
-	termSetClosedFlag($(2));
+	termRemoveOper((TERM *) $(2));
+	termSetClosedFlag((TERM *) $(2));
 
 	/*
 	if( ((TERM*)$(2))->closed )
@@ -231,9 +231,9 @@ void procRule0(SYMB_INFO *symb) {
 	*/
 	if( ((TERM*)$(2))->closed ) {
 		strcpy(buf_str, $(0));
-		termAddDecl(str_intern(removeChar(buf_str, '\'')), $(2));
+		termAddDecl(str_intern(removeChar(buf_str, '\'')), (TERM *) $(2));
 	} else {
-		fprintf(stderr, "Error: alias %s is not a closed term and won't be registered\n", $(0));
+		fprintf(stderr, "Error: alias %s is not a closed term and won't be registered\n", (char *) $(0));
 	}
 
 	$$ = NULL;
@@ -249,7 +249,7 @@ void procRule1(SYMB_INFO *symb) {
 
 	//$$ = c;
 
-	execTerm($(1));
+	execTerm((TERM *) $(1));
 	$$ = NULL;
 }
 
@@ -339,7 +339,7 @@ void procRule11(SYMB_INFO *symb) {
 
 // OPER -> op
 void procRule13(SYMB_INFO *symb) {
-	$$ = str_intern($(0));
+	$$ = (void *) str_intern($(0));
 }
 
 // Simply sets $$ to NULL

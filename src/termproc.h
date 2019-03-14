@@ -31,7 +31,7 @@ void termGC();
 TERM *termClone(TERM *t);
 
 int termSubst(TERM *x, TERM *M, TERM *N, int mustClone);
-int termIsFreeVar(TERM *t, char *name);
+int termIsFreeVar(TERM *t, const char *name);
 int termConv(TERM *t);
 
 TERM *termPower(TERM *f, TERM *a, int pow);
@@ -41,16 +41,14 @@ int termIsList(TERM *t);
 void termPrintList(TERM *t);
 
 int termAliasSubst(TERM *t);
-int termRemoveAliases(TERM *t, char *id);
-void termAlias2Var(TERM *t, char *alias, char *var);
+int termRemoveAliases(TERM *t, const char *id);
+void termAlias2Var(TERM *t, const char *alias, const char *var);
 
 void termRemoveOper(TERM *t);
 void termSetClosedFlag(TERM *t);
 list_t* termFreeVars(TERM *t);
 
-char *getVariable(TERM *t1, TERM *t2);
+const char *getVariable(TERM *t1, TERM *t2);
 
 
 #endif
-
-

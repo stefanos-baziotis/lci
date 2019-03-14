@@ -35,7 +35,7 @@ typedef enum { SC_BUFFER, SC_FILE } INPUT_TYPE;
 // token info
 typedef struct {
 	TOKEN_TYPE type;
-	char *value;
+	const char *value;
 } TOKEN;
 
 // grammar symbol info
@@ -68,7 +68,7 @@ extern int scLineNo;
 
 // arrays modelling the finite state automaton (fsm) and the grammar
 // must be defined in some .c file
-extern char *validChars[VALIDCHNO];
+extern const char *validChars[VALIDCHNO];
 extern STATE fsm[VALIDCHNO][STATENO];
 
 extern GRAM_RULE grammar[RULENO];

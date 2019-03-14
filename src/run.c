@@ -171,6 +171,52 @@ int execTerm(TERM *t) {
 	return retval;
 }
 
+static const char *DefOp;
+static const char *ShowAlias;
+static const char *Print;
+static const char *FixedPoint;
+static const char *Consult;
+static const char *Set;
+static const char *Help;
+static const char *Quit;
+
+static const char *xfx;
+static const char *yfx;
+static const char *xfy;
+
+static const char *trace_str;
+static const char *showpar;
+static const char *greeklambda;
+static const char *showexec;
+static const char *readable;
+
+static const char *on;
+static const char *off;
+
+void execSystemCmdInitialize(void) {
+	DefOp = str_intern("DefOp");
+	ShowAlias = str_intern("ShowAlias");
+	Print = str_intern("Print");
+	FixedPoint = str_intern("FixedPoint");
+	Consult = str_intern("Consult");
+	Set = str_intern("Set");
+	Help = str_intern("Help");
+	Quit = str_intern("Quit");
+	
+	xfx = str_intern("xfx");
+	yfx = str_intern("yfx");
+	xfy = str_intern("xfy");
+	
+	trace_str = str_intern("trace");
+	showpar = str_intern("showpar");
+	greeklambda = str_intern("greeklambda");
+	showexec = str_intern("showexec");
+	readable = str_intern("readable");
+	
+	on = str_intern("on");
+	off = str_intern("off");
+}
+
 // execSystemCmd
 //
 // Checks if term t is a system command and if so executes the command. System commands
@@ -196,11 +242,11 @@ int execSystemCmd(TERM *t) {
 	if(t->type != TM_ALIAS)
 		return 1;
 
-	if(strcmp(t->name, "DefOp") == 0) {
+	if(t->name == DefOp) {
 		// DefOp name preced assoc
 		//
 		// Stores an operator's declaration
-		char *oper;
+		const char *oper;
 		int prec;
 		ASS_TYPE ass;
 
@@ -219,11 +265,11 @@ int execSystemCmd(TERM *t) {
 		// param 3: associativity
 		par = *--sp;
 		if(par->type != TM_ALIAS && par->type != TM_VAR) return -1;
-		if(strcmp(par->name, "xfx") == 0)
+		if(par->name == xfx)
 			ass = ASS_NONE;
-		else if(strcmp(par->name, "yfx") == 0)
+		else if(par->name == yfx)
 			ass = ASS_LEFT;
-		else if(strcmp(par->name, "xfy") == 0)
+		else if(par->name == xfy)
 			ass = ASS_RIGHT;
 		else
 			return -1;
@@ -232,12 +278,12 @@ int execSystemCmd(TERM *t) {
 		// addOper(strdup(oper), prec, ass);
 		addOper(str_intern(oper), prec, ass);
 
-	} else if(strcmp(t->name, "ShowAlias") == 0) {
+	} else if(t->name == ShowAlias) {
 		// ShowAlias
 		//
 		// Prints the definition of all stored aliases, or of a specific one
 		// if given as a parameter.
-		char *id = NULL;
+		const char *id = NULL;
 
 		if(parno != 0 && parno != 1) return -1;
 		if(parno == 1) {
@@ -248,7 +294,7 @@ int execSystemCmd(TERM *t) {
 
 		printDeclList(id);
 
-	} else if(strcmp(t->name, "Print") == 0) {
+	} else if(t->name == Print) {
 		// Print
 		//
 		// Prints the term given as a parameter
@@ -257,7 +303,7 @@ int execSystemCmd(TERM *t) {
 		termPrint(*--sp, 1);
 		printf("\n");
 
-	} else if(strcmp(t->name, "FixedPoint") == 0) {
+	} else if(t->name == FixedPoint) {
 		// FixedPoint
 		//
 		// Removes recursion from aliases using a fixed point combinator
@@ -273,7 +319,7 @@ int execSystemCmd(TERM *t) {
 		else
 			printf("No cycles found\n");
 
-	} else if(strcmp(t->name, "Consult") == 0) {
+	} else if(t->name == Consult) {
 		// Consult file
 		//
 		// Reads a file and executes its commands
@@ -291,7 +337,7 @@ int execSystemCmd(TERM *t) {
 			break;
 		}
 
-	} else if(strcmp(t->name, "Set") == 0) {
+	} else if(t->name == Set) {
 		// Set option value
 		//
 		// Changes the value of an option
@@ -302,29 +348,29 @@ int execSystemCmd(TERM *t) {
 
 		par = *--sp;
 		if(par->type != TM_VAR) return -1;
-		if(strcmp(par->name, "trace") == 0)
+		if(par->name == trace_str)
 			opt = OPT_TRACE;
-		else if(strcmp(par->name, "showpar") == 0)
+		else if(par->name == showpar)
 			opt = OPT_SHOWPAR;
-		else if(strcmp(par->name, "greeklambda") == 0)
+		else if(par->name == greeklambda)
 			opt = OPT_GREEKLAMBDA;
-		else if(strcmp(par->name, "showexec") == 0)
+		else if(par->name == showexec)
 			opt = OPT_SHOWEXEC;
-		else if(strcmp(par->name, "readable") == 0)
+		else if(par->name == readable)
 			opt = OPT_READABLE;
 		else
 			return -1;
 
 		par = *--sp;
-		if(strcmp(par->name, "on") == 0)
+		if(par->name == on)
 			value = 1;
-		else if(strcmp(par->name, "off") == 0)
+		else if(par->name == off)
 			value = 0;
 		else return -1;
 
 		options[opt] = value;
 
-	} else if(strcmp(t->name, "Help") == 0) {
+	} else if(t->name == Help) {
 		// Help
 		//
 		// Prints help message
@@ -357,7 +403,7 @@ int execSystemCmd(TERM *t) {
 		printf("along with this program; if not, write to the Free Software\n");
 		printf("Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n\n");
 
-	} else if(strcmp(t->name, "Quit") == 0) {
+	} else if(t->name == Quit) {
 		if(parno != 0) return -1;
 		return -2;
 
@@ -376,7 +422,7 @@ int execSystemCmd(TERM *t) {
 //   -1  cannot open file
 //   -2  syntax error
 
-int consultFile(char *fname) {
+int consultFile(const char *fname) {
 	FILE *f;
 
 	if(!(f = fopen(fname, "r")))

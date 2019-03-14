@@ -39,7 +39,7 @@ DECL *declList = NULL;
 // Adds the term to the declaration list with the given id.
 // If a term with this id already exists it is replaced.
 
-void termAddDecl(char *id, TERM *term) {
+void termAddDecl(const char *id, TERM *term) {
 	DECL *decl;
 
 	// declared term must be closed
@@ -68,7 +68,7 @@ void termAddDecl(char *id, TERM *term) {
 // Returns a record corresponding to the declaration with
 // the given id, or NULL if there is no such declaration.
 
-DECL *getDecl(char *id) {
+DECL *getDecl(const char *id) {
 	DECL *decl;
 
 	for(decl = declList; decl; decl = decl->next)
@@ -82,7 +82,7 @@ DECL *getDecl(char *id) {
 //
 // Returns a clone of the term stored with the given id
 
-TERM *termFromDecl(char *id) {
+TERM *termFromDecl(const char *id) {
 	DECL *decl = getDecl(id);
 
 	return decl
@@ -109,7 +109,7 @@ void buildAliasList(DECL *d) {
 //
 // Returns 1 if id exists in list, otherwise 0
 
-int searchAliasList(IDLIST *list, char *id) {
+int searchAliasList(IDLIST *list, const char *id) {
 	for(list = list->next; list; list = list->next)
 		 // TODO(stefanos): Should this one be removed?
 		if(strcmp(list->id, id) == 0)
@@ -259,8 +259,8 @@ void removeCycle(CYCLE c) {
 	DECL *d, *decl;
 	TERM *t, *newTerm, *tmpTerm;
 	char buffer[500],
-		  newId[50],
-		  *tmpId;
+		  newId[50];
+	const char *tmpId;
 	int i;
 
 	// if there is more than one alias in the cycle, merge them in a tuple
@@ -375,7 +375,7 @@ TERM *getIndexTerm(int varno, int n, char *tuple) {
 //
 // Prints the entire declaration list
 
-void printDeclList(char *id) {
+void printDeclList(const char *id) {
 	DECL *d;
 
 	if(id)
@@ -401,7 +401,7 @@ void printDeclList(char *id) {
 OPER *operList = NULL;
 
 
-OPER *getOper(char *id) {
+OPER *getOper(const char *id) {
 	OPER *op;
 
 	for(op = operList; op; op = op->next)
@@ -415,7 +415,7 @@ OPER *getOper(char *id) {
 //
 // Adds an operator declaration. Replace if already exists.
 
-void addOper(char *id, int preced, ASS_TYPE assoc) {
+void addOper(const char *id, int preced, ASS_TYPE assoc) {
 	OPER *op;
 
 	// if id is already registered we replace

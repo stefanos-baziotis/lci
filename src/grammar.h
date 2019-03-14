@@ -86,7 +86,7 @@ typedef enum { CM_QUEST, CM_DECL } COMMAND_TYPE;
 typedef struct term_tag {
 	struct term_tag *lterm;					// left and right children
 	struct term_tag *rterm;					// (for applications and abstractions)
-	char *name;									// name (for variables, aliases and applications with an operator)
+	const char *name;							// name (for variables, aliases and applications with an operator)
 	TERM_TYPE type;							// variable, application or abstraction
 	ASS_TYPE assoc;
 	unsigned char preced;
@@ -95,15 +95,13 @@ typedef struct term_tag {
 
 typedef struct command_tag {
 	COMMAND_TYPE type;
-	char *id;
+	const char *id;
 	TERM *term;
 	struct command_tag *next;
 } COMMAND;
 
 
-TOKEN_TYPE selectOper(char *name);
+TOKEN_TYPE selectOper(const char *name);
 
 
 #endif
-
-

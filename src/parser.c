@@ -56,7 +56,7 @@ int getToken(TOKEN *ptok) {
 	//if getToken is called without ptok then initialize scanner
 	if(!ptok) {
 		int i;
-		char *cpt;
+		const char *cpt;
 
 		tbuf = tokenBuffer;
 		prevState = S_INI;
@@ -190,7 +190,7 @@ int parse(void **progTree, int uGrammar) {
 			// terminal symbol
 			if(curSymb->type == curToken.type) {
 				// matches the input symbol
-				curSymb->value = curToken.value;					//Apo8hkeysh timhs
+				curSymb->value = (void *) curToken.value;		//Apo8hkeysh timhs
 				if(getToken(&curToken) != PAR_OK)				//pairnoyme neo symbolo
 					return PAR_ERROR;
 
