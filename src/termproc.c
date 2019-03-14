@@ -26,10 +26,11 @@
 
 #include "kazlib/list.h"
 
-#include "termproc.h"
 #include "decllist.h"
 #include "parser.h"
 #include "run.h"
+#include "str_intern.h"
+#include "termproc.h"
 
 
 #define DEFAULT_POOL_SIZE 500
@@ -110,13 +111,14 @@ void termFree(TERM *t) {
 	// if the pool is full then create a new one of twice the size
 	if(termPoolIndex >= termPoolSize) {
 		termPoolSize = termPoolSize == 0 ? DEFAULT_POOL_SIZE : 2*termPoolSize;
-		newPool = malloc(termPoolSize * sizeof(TERM*));
+		// newPool = malloc(termPoolSize * sizeof(TERM*));
+		newPool = mem_arena_push_bytes(termPoolSize * sizeof(TERM*));
 
 		// copy terms to new pool
 		for(i = 0; i < termPoolIndex; i++)
 			newPool[i] = termPool[i];
 
-		free(termPool);
+		// free(termPool);
 		termPool = newPool;
 	}
 
@@ -125,11 +127,13 @@ void termFree(TERM *t) {
 }
 
 void termGC() {
+	/*
 	while(termPoolIndex >= 0)
 		free(termNew());
+	*/
 
 	if(termPoolSize > DEFAULT_POOL_SIZE) {
-		free(termPool);
+		// free(termPool);
 		termPool = NULL;
 		termPoolSize = 0;
 	}
@@ -146,18 +150,20 @@ TERM *termNew() {
 		switch(t->type) {
 		 case TM_VAR:
 		 case TM_ALIAS:
-			free(t->name);
+			// free(t->name);
 			break;
 	
 		 case TM_APPL:
-			free(t->name);
+			// free(t->name);
 		 case TM_ABSTR:
 			termFree(t->lterm);
 			termFree(t->rterm);
 			break;
 		}
-	} else
-		t = malloc(sizeof(TERM));
+	} else {
+		// t = malloc(sizeof(TERM));
+		t = mem_arena_push_bytes(sizeof(TERM));
+	}
 
 	return t;
 }
@@ -175,9 +181,10 @@ TERM *termClone(TERM *t) {
 	newTerm->closed = t->closed;
 	//newTerm->assoc = t->assoc;			// assoc used only in parsing, no need to copy it
 
-	if(t->type == TM_VAR || t->type == TM_ALIAS)
-		newTerm->name = strdup(t->name);
-	else {														//TM_ABRST or TM_APPL
+	if(t->type == TM_VAR || t->type == TM_ALIAS) {
+		// newTerm->name = strdup(t->name);
+		newTerm->name = str_intern(t->name);
+	} else {														//TM_ABRST or TM_APPL
 		newTerm->name = NULL;
 		newTerm->lterm = termClone(t->lterm);
 		newTerm->rterm = termClone(t->rterm);
@@ -209,11 +216,11 @@ int termSubst(TERM *x, TERM *M, TERM *N, int mustClone) {
 	switch(M->type) {
 	 case TM_VAR:
 	 	if(strcmp(M->name, x->name) == 0) {
-			free(M->name);
+			// free(M->name);
 			if(mustClone) {
 				clone = termClone(N);
 				*M = *clone;
-				free(clone);
+				// free(clone);
 			} else
 				*M = *N;
 
@@ -370,8 +377,8 @@ int termConv(TERM *t) {
 			*t = *M;
 
 			// free memory
-			free(M);
-			free(L);
+			// free(M);
+			// free(L);
 			termFree(N);
 			termFree(x);
 
@@ -418,13 +425,16 @@ int termConv(TERM *t) {
 		t->closed = M->closed || closed;
 
 		// free memory
-		free(L);
-		free(M);
+		// free(L);
+		// free(M);
 		termFree(x);
+		/*
 		if(found)
 			free(N);
 		else
 			termFree(N);
+		*/
+		if(!found) termFree(N);
 
 		return 1;
 
@@ -473,10 +483,12 @@ TERM *termChurchNum(int n) {
 		  *x  = termNew();
 
 	f->type = TM_VAR;
-	f->name = strdup("f");
+	// f->name = strdup("f");
+	f->name = str_intern("f");
 
 	x->type = TM_VAR;
-	x->name = strdup("x");
+	// x->name = strdup("x");
+	x->name = str_intern("x");
 
 	l1->type = TM_ABSTR;
 	l1->name = NULL;
@@ -590,9 +602,9 @@ int termAliasSubst(TERM *t) {
 	assert(newTerm->closed == 1);
 
 	// substitute term
-	free(t->name);
+	// free(t->name);
 	*t = *newTerm;
-	free(newTerm);
+	// free(newTerm);
 
 	return 0;
 }
@@ -652,8 +664,9 @@ void termAlias2Var(TERM *t, char *alias, char *var) {
 	 case(TM_ALIAS):
 		if(strcmp(alias, t->name) == 0) {
 			t->type = TM_VAR;
-			free(t->name);
-			t->name = strdup(var);
+			// free(t->name);
+			// t->name = strdup(var);
+			t->name = str_intern(var);
 		}
 		return;
 	}
@@ -683,7 +696,7 @@ void termRemoveOper(TERM *t) {
 
 		if(t->name && strcmp(t->name, "~") == 0) {
 			t->preced = 255;
-			free(t->name);
+			// free(t->name);
 			t->name = NULL;
 
 		} else if(t->name) {
@@ -774,7 +787,8 @@ char *getVariable(TERM *t1, TERM *t2) {
 	}
 
 	// string found, return a copy
-	return strdup(s);
+	// return strdup(s);
+	return str_intern(s);
 }
 
 

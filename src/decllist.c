@@ -25,8 +25,9 @@
 #include <assert.h>
 
 #include "decllist.h"
-#include "termproc.h"
+#include "mem_arena.h"
 #include "parser.h"
+#include "termproc.h"
 
 
 DECL *declList = NULL;
@@ -46,12 +47,13 @@ void termAddDecl(char *id, TERM *term) {
 	// if a declaration with this id exists, replace it
 	if((decl = getDecl(id))) {
 		//free declaration memory
-		free(decl->id);
+		// free(decl->id);
 		termFree(decl->term);
 
 	} else {
 		// if declaration not found, create a new one
-		decl = malloc(sizeof(DECL));
+		// decl = malloc(sizeof(DECL));
+		decl = mem_arena_push_bytes(sizeof(DECL));
 		decl->aliases.next = NULL;
 		decl->next = declList;
 		declList = decl;
@@ -137,7 +139,8 @@ void findAliases(TERM *t, IDLIST *list) {
 
 	 case TM_ALIAS:
 		if(!searchAliasList(list, t->name)) {
-			tmp = malloc(sizeof(IDLIST));
+			// tmp = malloc(sizeof(IDLIST));
+			tmp = mem_arena_push_bytes(sizeof(IDLIST));
 			strcpy(tmp->id, t->name);
 			tmp->next = list->next;
 			list->next = tmp;
@@ -425,11 +428,19 @@ void addOper(char *id, int preced, ASS_TYPE assoc) {
 	OPER *op;
 
 	// if id is already registered we replace
+	/*
 	if((op = getOper(id)))
 		free(op->id);
 	else {
 		// not found, create new
 		op = malloc(sizeof(OPER));
+		op->next = operList;
+		operList = op;
+	}
+	*/
+	if(!(op = getOper(id))) {
+		// not found, create new
+		op = mem_arena_push_bytes(sizeof(OPER));
 		op->next = operList;
 		operList = op;
 	}

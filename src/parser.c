@@ -23,7 +23,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "mem_arena.h"
 #include "parser.h"
+#include "str_intern.h"
 
 
 
@@ -135,7 +137,8 @@ int getToken(TOKEN *ptok) {
 				ptok->type = prevState == S_OP
 					? selectOper(tbuf)
 					: prevState;
-				ptok->value = strdup(tbuf);
+				// ptok->value = strdup(tbuf);
+				ptok->value = str_intern(tbuf);
 			}
 		}
 
@@ -203,7 +206,8 @@ int parse(void **progTree, int uGrammar) {
 			// these symbols in the chl array.
 			curSymb->ruleNo = ruleNo;
 			for(i = grammar[ruleNo].rsNo - 1; i >= 0; i--) {
-				SYMB_INFO *tmpSymb = malloc(sizeof(SYMB_INFO));
+				// SYMB_INFO *tmpSymb = malloc(sizeof(SYMB_INFO));
+				SYMB_INFO *tmpSymb = mem_arena_push_bytes(sizeof(SYMB_INFO));
 				curSymb->chl[i] = tmpSymb;
 	
 				tmpSymb->type = grammar[ruleNo].rs[i];
@@ -243,11 +247,13 @@ void buildParseTree(SYMB_INFO *symb) {
 	grammar[symb->ruleNo].func(symb);
 
 	// free memory
+	/*
 	for(i = 0; i < grammar[symb->ruleNo].rsNo; i++) {
 		if(symb->chl[i]->isTerminal)
 			free(symb->chl[i]->value);
 		free(symb->chl[i]);
 	}
+	*/
 }
 
 

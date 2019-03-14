@@ -27,8 +27,10 @@
 #endif
 
 #include "grammar.h"
+#include "mem_arena.h"
 #include "parser.h"
 #include "run.h"
+#include "str_intern.h"
 
 #define MAX_HISTORY_ENTRIES 100
 
@@ -39,6 +41,9 @@ int main() {
 		 *lcirc = ".lcirc",
 		 *lci_history = "/.lci_history",
 		 *path;
+
+	mem_arena_initialize(MB(8));
+	str_intern_initialize();
 
 #ifdef USE_READLINE
 	char *buffer = NULL;
@@ -147,6 +152,9 @@ int main() {
 		free(path);
 	}
 #endif
+
+	str_intern_free();
+	mem_arena_free();
 
 	return 0;
 }

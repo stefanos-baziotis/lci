@@ -24,11 +24,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parser.h"
-#include "grammar.h"
-#include "termproc.h"
 #include "decllist.h"
+#include "grammar.h"
+#include "parser.h"
 #include "run.h"
+#include "termproc.h"
+#include "str_intern.h"
 
 
 // Valid language characters
@@ -44,6 +45,9 @@ char *validChars[VALIDCHNO] =	{
 	"\\",
 	"(", ")", "'"
 };
+
+// Misc string buffer
+static char buf_str[128];
 
 // Finite automaton used for lexical analysis
 
@@ -217,10 +221,18 @@ void procRule0(SYMB_INFO *symb) {
 	termRemoveOper($(2));
 	termSetClosedFlag($(2));
 
+	/*
 	if( ((TERM*)$(2))->closed )
 		termAddDecl(strdup(removeChar($(0), '\'')), $(2));
 	else
 		fprintf(stderr, "Error: alias %s is not a closed term and won't be registered\n", $(0));
+	*/
+	if( ((TERM*)$(2))->closed ) {
+		strcpy(buf_str, $(0));
+		termAddDecl(str_intern(removeChar(buf_str, '\'')), $(2));
+	} else {
+		fprintf(stderr, "Error: alias %s is not a closed term and won't be registered\n", $(0));
+	}
 
 	$$ = NULL;
 }
@@ -243,7 +255,8 @@ void procRule1(SYMB_INFO *symb) {
 void procRule2(SYMB_INFO *symb) {
 	TERM *s = termNew();
 	s->type = TM_VAR;
-	s->name = strdup($(0));
+	// s->name = strdup($(0));
+	s->name = str_intern($(0));
 
 	$$ = newAppl(s, $(1));
 }
@@ -264,7 +277,9 @@ void procRule3(SYMB_INFO *symb) {
 void procRule4(SYMB_INFO *symb) {
 	TERM *s = termNew();
 	s->type = TM_ALIAS;
-	s->name = strdup(removeChar($(0), '\''));
+	// s->name = strdup(removeChar($(0), '\''));
+	strcpy(buf_str, $(0));
+	s->name = str_intern(removeChar($(0), '\''));
 
 	$$ = newAppl(s, $(1));
 }
@@ -281,7 +296,8 @@ void procRule6(SYMB_INFO *symb) {
 		  *v = termNew();
 
 	v->type = TM_VAR;
-	v->name = strdup($(1));
+	// v->name = strdup($(1));
+	v->name = str_intern($(1));
 
 	s->type = TM_ABSTR;
 	s->lterm = v;
@@ -324,7 +340,8 @@ void procRule11(SYMB_INFO *symb) {
 
 // OPER -> op
 void procRule13(SYMB_INFO *symb) {
-	$$ = strdup($(0));
+	// $$ = strdup($(0));
+	$$ = str_intern($(0));
 }
 
 // Simply sets $$ to NULL
