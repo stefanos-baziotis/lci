@@ -72,7 +72,7 @@ DECL *getDecl(char *id) {
 	DECL *decl;
 
 	for(decl = declList; decl; decl = decl->next)
-		if(strcmp(decl->id, id) == 0)
+		if(decl->id == id)
 			return decl;
 
 	return NULL;
@@ -95,14 +95,6 @@ TERM *termFromDecl(char *id) {
 // Deletes the old alias list and creates a new one
 
 void buildAliasList(DECL *d) {
-	IDLIST *idl, *tmp;
- 
-	//free aliases list
-	for(idl = d->aliases.next; idl; idl = tmp) {
-		tmp = idl->next;
-		free(idl);
-	}
-
 	d->aliases.next = NULL;
 	findAliases(d->term, &d->aliases);
 
@@ -119,6 +111,7 @@ void buildAliasList(DECL *d) {
 
 int searchAliasList(IDLIST *list, char *id) {
 	for(list = list->next; list; list = list->next)
+		 // TODO(stefanos): Should this one be removed?
 		if(strcmp(list->id, id) == 0)
 			return 1;
 
@@ -138,7 +131,6 @@ void findAliases(TERM *t, IDLIST *list) {
 
 	 case TM_ALIAS:
 		if(!searchAliasList(list, t->name)) {
-			// tmp = malloc(sizeof(IDLIST));
 			tmp = mem_arena_push_bytes(sizeof(IDLIST));
 			strcpy(tmp->id, t->name);
 			tmp->next = list->next;
@@ -294,7 +286,7 @@ void removeCycle(CYCLE c) {
 		parse((void**)&t, TK_TERM);
 
 		termSetClosedFlag(t);				// mark sub-terms as closed
-		termAddDecl(strdup(newId), t);
+		termAddDecl(str_intern(newId), t);
 
 		// replace aliases with their corresponding terms
 		termRemoveAliases(t, NULL);
@@ -302,7 +294,7 @@ void removeCycle(CYCLE c) {
 		// Aliases contained in the cycle have been merged in a tuple.
 		// So their appearances are replaced by Index calls
 		for(i = 0, d = c.end; i < c.size; i++) {
-			tmpId = strdup(d->id);
+			tmpId = str_intern(d->id);
 			d = d->prev;
 
 			tmpTerm = getIndexTerm(c.size, i, newId);
@@ -329,7 +321,7 @@ void removeCycle(CYCLE c) {
 
 	newTerm->lterm = termNew();								// Y
 	newTerm->lterm->type = TM_ALIAS;
-	newTerm->lterm->name = strdup("Y");
+	newTerm->lterm->name = str_intern("Y");
 
 	newTerm->rterm = termNew();								// Remove \_me.
 	tmpTerm = newTerm->rterm;
@@ -339,7 +331,7 @@ void removeCycle(CYCLE c) {
 
 	tmpTerm->lterm = termNew();								// _me variable
 	tmpTerm->lterm->type = TM_VAR;
-	tmpTerm->lterm->name = strdup("_me");
+	tmpTerm->lterm->name = str_intern("_me");
 
 	// Change declaration
 	// Note: can't use termAddDecl because it frees the old term (used in the new one)
@@ -413,7 +405,7 @@ OPER *getOper(char *id) {
 	OPER *op;
 
 	for(op = operList; op; op = op->next)
-		if(strcmp(op->id, id) == 0)
+		if(op->id == id)
 			return op;
 
 	return NULL;

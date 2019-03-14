@@ -131,6 +131,8 @@ TOKEN_TYPE selectOper(char *name) {
 	int i;
 
 	for(i = 0; i < OPERNO; i++)
+		// NOTE(stefanos): This cannot be string-interned because of
+		// the array above.
 		if(strcmp(name, opers[i].name) == 0)
 			return opers[i].token;
 

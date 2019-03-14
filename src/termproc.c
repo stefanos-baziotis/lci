@@ -170,7 +170,6 @@ TERM *termClone(TERM *t) {
 	//newTerm->assoc = t->assoc;			// assoc used only in parsing, no need to copy it
 
 	if(t->type == TM_VAR || t->type == TM_ALIAS) {
-		// newTerm->name = strdup(t->name);
 		newTerm->name = str_intern(t->name);
 	} else {														//TM_ABRST or TM_APPL
 		newTerm->name = NULL;
@@ -203,7 +202,7 @@ int termSubst(TERM *x, TERM *M, TERM *N, int mustClone) {
 
 	switch(M->type) {
 	 case TM_VAR:
-	 	if(strcmp(M->name, x->name) == 0) {
+	 	if(M->name == x->name) {
 			if(mustClone) {
 				clone = termClone(N);
 				*M = *clone;
@@ -228,7 +227,7 @@ int termSubst(TERM *x, TERM *M, TERM *N, int mustClone) {
 		P = M->rterm;
 
 		// case 1: x = y
-		if(strcmp(y->name, x->name) == 0)
+		if(y->name == x->name)
 			break;
 
 		// If y is free in N then we should alpha-convert it to a different name to avoid capture
@@ -299,14 +298,14 @@ int termIsFreeVar(TERM *t, char *name) {
 
 	switch(t->type) {
 	 case TM_VAR:
-		return (strcmp(t->name, name) == 0);
+		return (t->name ==name);
 
 	 case TM_APPL:
 		return termIsFreeVar(t->lterm, name) ||
 				 termIsFreeVar(t->rterm, name);
 
 	 case TM_ABSTR:
-		return strcmp(t->lterm->name, name) != 0 &&
+		return t->lterm->name != name &&
 				 termIsFreeVar(t->rterm, name);
 	
 	 case TM_ALIAS:
@@ -356,7 +355,7 @@ int termConv(TERM *t) {
 
 		if(L->type == TM_APPL &&
 			N->type == TM_VAR &&
-			strcmp(N->name, x->name) == 0
+			(N->name == x->name)
 			&& !termIsFreeVar(M, x->name)) {
 
 			// eta-conversion
@@ -459,11 +458,9 @@ TERM *termChurchNum(int n) {
 		  *x  = termNew();
 
 	f->type = TM_VAR;
-	// f->name = strdup("f");
 	f->name = str_intern("f");
 
 	x->type = TM_VAR;
-	// x->name = strdup("x");
 	x->name = str_intern("x");
 
 	l1->type = TM_ABSTR;
@@ -494,16 +491,16 @@ int termNumber(TERM *t) {
 	// second term must be \x. with x != f
 	if(t->rterm->type != TM_ABSTR) return -1;
 	x = (t->rterm->lterm);
-	if(strcmp(f->name, x->name) == 0) return -1;
+	if(f->name == x->name) return -1;
 
 	// recognize term f^n(x), compute n
 	for(cur = t->rterm->rterm; ; cur = cur->rterm, n++) {
-		if(cur->type == TM_VAR && strcmp(cur->name, x->name) == 0)
+		if(cur->type == TM_VAR && cur->name == x->name)
 			return n;
 
 		if(cur->type != TM_APPL ||
 			cur->lterm->type != TM_VAR ||
-			strcmp(cur->lterm->name, f->name) != 0)
+			(cur->lterm->name != f->name))
 			return -1;
 	}
 }	
@@ -524,7 +521,7 @@ int termIsList(TERM *t) {
 		// check for the form \s.s Head Tail
 		if(r->lterm->type == TM_APPL &&
 			r->lterm->lterm->type == TM_VAR &&
-			strcmp(r->lterm->lterm->name, t->lterm->name) == 0)
+			(r->lterm->lterm->name == t->lterm->name))
 			return termIsList(r->rterm);
 		break;
 
@@ -532,7 +529,7 @@ int termIsList(TERM *t) {
 		// check for the form Nil: \x.\x.\y.x
 		if(r->rterm->type == TM_ABSTR &&
 			r->rterm->rterm->type == TM_VAR &&
-			strcmp(r->rterm->rterm->name, r->lterm->name) == 0)
+			(r->rterm->rterm->name == r->lterm->name))
 			return 1;
 		break;
 
@@ -603,9 +600,7 @@ int termRemoveAliases(TERM *t, char *id) {
 				  termRemoveAliases(t->rterm, id);
 
 	 case(TM_ALIAS):
-		return !id || strcmp(id, t->name) == 0
-			? termAliasSubst(t)
-			: 0;
+		return (!id || (id == t->name)) ? termAliasSubst(t) : 0;
 
 		//Antikatastash mono enos epipedoy
 		//return termRemoveAliases(t);
@@ -636,7 +631,7 @@ void termAlias2Var(TERM *t, char *alias, char *var) {
 		return;
 
 	 case(TM_ALIAS):
-		if(strcmp(alias, t->name) == 0) {
+		if(alias == t->name) {
 			t->type = TM_VAR;
 			t->name = str_intern(var);
 		}
@@ -717,7 +712,7 @@ list_t* termFreeVars(TERM *t) {
 
 	 case(TM_ABSTR):
 		vars = termFreeVars(t->rterm);
-		while(node = list_find(vars, t->lterm->name, (int(*)(const void*, const void*))strcmp))
+		while((node = list_find(vars, t->lterm->name, (int(*)(const void*, const void*))strcmp)))
 			lnode_destroy(list_delete(vars, node));
 		break;
 
@@ -758,7 +753,6 @@ char *getVariable(TERM *t1, TERM *t2) {
 	}
 
 	// string found, return a copy
-	// return strdup(s);
 	return str_intern(s);
 }
 

@@ -42,7 +42,7 @@ int main() {
 		 *lci_history = "/.lci_history",
 		 *path;
 
-	mem_arena_initialize(MB(8));
+	mem_arena_initialize(MB(1));
 	str_intern_initialize();
 
 #ifdef USE_READLINE
@@ -101,9 +101,11 @@ int main() {
 
 	if(!found)
 	   fprintf(stderr, "warning: no .lcirc file was found\n");
-
+	
+	size_t size_used_up_to_now = mem_arena_size();
 	// read and execute commands
 	while(!feof(stdin)) {
+		mem_arena_set_size(size_used_up_to_now);
 		// read command
 #ifdef USE_READLINE
 		free(buffer);
