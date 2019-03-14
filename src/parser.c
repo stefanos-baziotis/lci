@@ -137,7 +137,6 @@ int getToken(TOKEN *ptok) {
 				ptok->type = prevState == S_OP
 					? selectOper(tbuf)
 					: prevState;
-				// ptok->value = strdup(tbuf);
 				ptok->value = str_intern(tbuf);
 			}
 		}
@@ -245,15 +244,6 @@ void buildParseTree(SYMB_INFO *symb) {
 
 	// process the rule
 	grammar[symb->ruleNo].func(symb);
-
-	// free memory
-	/*
-	for(i = 0; i < grammar[symb->ruleNo].rsNo; i++) {
-		if(symb->chl[i]->isTerminal)
-			free(symb->chl[i]->value);
-		free(symb->chl[i]);
-	}
-	*/
 }
 
 

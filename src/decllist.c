@@ -27,6 +27,7 @@
 #include "decllist.h"
 #include "mem_arena.h"
 #include "parser.h"
+#include "str_intern.h"
 #include "termproc.h"
 
 
@@ -47,12 +48,10 @@ void termAddDecl(char *id, TERM *term) {
 	// if a declaration with this id exists, replace it
 	if((decl = getDecl(id))) {
 		//free declaration memory
-		// free(decl->id);
 		termFree(decl->term);
 
 	} else {
 		// if declaration not found, create a new one
-		// decl = malloc(sizeof(DECL));
 		decl = mem_arena_push_bytes(sizeof(DECL));
 		decl->aliases.next = NULL;
 		decl->next = declList;
@@ -428,16 +427,6 @@ void addOper(char *id, int preced, ASS_TYPE assoc) {
 	OPER *op;
 
 	// if id is already registered we replace
-	/*
-	if((op = getOper(id)))
-		free(op->id);
-	else {
-		// not found, create new
-		op = malloc(sizeof(OPER));
-		op->next = operList;
-		operList = op;
-	}
-	*/
 	if(!(op = getOper(id))) {
 		// not found, create new
 		op = mem_arena_push_bytes(sizeof(OPER));
